@@ -7,6 +7,7 @@ function Observer(data) {
 
 Observer.prototype = {
   constructor: Observer,
+  handlers: {},
   walk: function () {
     var obj = this.data;
     for (var key in obj) {
@@ -19,6 +20,18 @@ Observer.prototype = {
       this.convert(obj, key, val);
     }
   },
+  $watch: function (e, handler) {
+    if (!(e in this.handlers)) {
+      this.handlers[e] = [];
+    }
+    this.handlers[e].push(handler);
+  },
+  emit: function (e, args) {
+    var handlerArgs = Array.prototype.slice.call(arguments,1);
+    for(var i = 0; i < this.handlers[e].length; i++) {
+      this.handlers[e][i].apply(this, handlerArgs);
+    }
+  },
   convert: function (data, key, val) {
     //创建访问器属性
     var that = this;
@@ -27,10 +40,19 @@ Observer.prototype = {
       configurable: true, //表示能否通过delete删除属性从而重新定义属性
       get: function () {
         console.log('你访问了' + key);
-        return val
+        return val;
       },
-      set: function (newVal) {       
-        console.log('你设置了' + key + ', 新的值为' + newVal);
+      set: function (newVal) {
+        //如果设置值为对象，同样进行递归处理
+        if (typeof newVal === 'object') {
+          for (var k in newVal) {
+            that.convert(newVal, k, newVal[k]);
+            if(!that.handlers[k]) continue;
+            that.emit(k, newVal[k]);
+            return;
+          }
+        }
+        that.emit(key, newVal);
         if (newVal === val) return;
         val = newVal
       }
@@ -49,3 +71,6 @@ var data = {
 };
 
 var test = new Observer(data);
+test.$watch('age', function(age) {
+  console.log('我的年纪变了，现在已经是：' + age + '岁了');
+});
