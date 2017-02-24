@@ -47,7 +47,6 @@ Observer.prototype = {
         if (typeof newVal === 'object') {
           for (var k in newVal) {
             that.convert(newVal, k, newVal[k]);
-            if(!that.handlers[k]) continue;
             that.emit(k, newVal[k]);
             return;
           }
@@ -72,5 +71,5 @@ var data = {
 
 var test = new Observer(data);
 test.$watch('age', function(age) {
-  console.log('我的年纪变了，现在已经是：' + age + '岁了');
+  console.log(`我的年纪变了，现在已经是：${age}岁了`);
 });
