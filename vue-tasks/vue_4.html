@@ -18,6 +18,7 @@
 //组合使用构造函数模式和原型模式
 function Vue (obj) {
   this.el = obj.el
+  this.data = obj.data
   this.render(obj.data)
 }
 
@@ -27,12 +28,8 @@ Vue.prototype = {
     for (var key in data) {
       if (data.hasOwnProperty(key)) {
         var val = data[key]
-        if (typeof val === 'object') {
-          this.render(val)
-        }
+        this.convert(key, val)
       }
-      this.setting(data, key, val)
-      data[key] //此处用于访问属性，替换模板变量
     }
   },
   convert: function (key, val) {
@@ -50,18 +47,6 @@ Vue.prototype = {
       var result = content.replace(match, val)
       el.textContent = result
     }
-  },
-  setting: function (data, key, val) {
-    //创建访问器属性
-    var _this = this
-    Object.defineProperty(data, key, {
-      enumerable: true, //表示能否通过for-in循环返回属性
-      configurable: true, //表示能否通过delete删除属性从而重新定义属性
-      get: function () {
-        _this.convert(key, val);
-        return val
-      }
-    })
   }
 }
 
