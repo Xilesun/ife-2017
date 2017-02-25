@@ -21,6 +21,7 @@ Observer.prototype = {
     }
   },
   $watch: function (e, handler) {
+    //如果观察的属性为对象，同时观察对象下面的属性
     if (typeof this.data[e] === 'object') {
       for (var key in this.data[e]) {
         if (!(key in this.handlers)) {
