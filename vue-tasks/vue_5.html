@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<title>Examples</title>
+<meta name="description" content="">
+<meta name="keywords" content="">
+<link href="" rel="stylesheet">
+</head>
+<body>
+<div id="app">
+  <p>姓名：{{user.name.firstName}}</p>
+  <p>年龄：{{user.age}}</p>
+</div>
+<script type="text/javascript">
+//此处是一个构造函数
+//组合使用构造函数模式和原型模式
+function Vue (obj) {
+  this.el = document.querySelector(obj.el) 
+  this.content = this.el.textContent //保存原始模板内容
+  this.data = obj.data
+  this.render(obj.data)
+}
+
+Vue.prototype = {
+  constructor: Vue,
+  render: function (data) {
+    for (var key in data) {
+      if (data.hasOwnProperty(key)) {
+        var val = data[key]
+        if (typeof val === 'object') {
+          this.render(val)
+        }
+      }
+      this.convert(key, val)
+      this.setting(data, key, val)
+    }
+  },
+  convert: function (key, val) {
+    var el = this.el
+    var content = el.textContent //取得当前页面内容
+    //如果属性值是对象修改匹配字符串
+    if (typeof val === 'object') {
+      for (var k in val) {
+        var string = key + '.' + k
+        this.convert(string, val[k])
+      }
+    }
+    var match = new RegExp('\{{2}' + key + '\}{2}')
+    if (match.test(content)) {
+      var result = content.replace(match, val)
+      el.textContent = result
+    }
+  },
+  setting: function (data, key, val) {
+    var _this = this;
+    Object.defineProperty(data, key, {
+      enumerable: true,
+      configurable: true,
+      get: function () {
+        return val
+      },
+      set: function (newVal) {
+        if (newVal === val) return
+        val = newVal
+        _this.el.textContent = _this.content //还原模板内容
+        _this.render(_this.data) //渲染数据
+      }
+    })
+  }
+}
+
+var test = new Vue({
+  el: '#app',
+  data: {
+    user: {
+      name: {
+        firstName: 'Qia'
+      },
+      age: 25
+    }
+  }
+})
+</script>
+</body>
+</html>
